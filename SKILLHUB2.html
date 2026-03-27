@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillHub • The Living Network of Learners</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
+       
+        :root {
+            --primary-start: #ff7a18;
+            --primary-end: #ff3cac;
+        }
+       
+        * { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+       
+        .logo-font { font-family: 'Space Grotesk', sans-serif; }
+       
+        .glass {
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+       
+        .glow-cyan { box-shadow: 0 0 35px -5px #00f5ff; }
+        .glow-orange { box-shadow: 0 0 35px -5px #ff7a18; }
+       
+        .network-node {
+            cursor: pointer;
+        }
+       
+        .skill-tag {
+            cursor: grab;
+            user-select: none;
+        }
+       
+        .skill-tag:active { cursor: grabbing; }
+       
+        @keyframes pulseNetwork {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.4); }
+        }
+       
+        .hero-canvas:hover {
+            animation: pulseNetwork 1.2s ease-in-out;
+        }
+
+        /* Chatbot Styles */
+        .chat-bubble {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(to bottom right, #ff7a18, #ff3cac);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 10px 35px -10px rgba(255, 122, 24, 0.8);
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .chat-bubble:hover {
+            transform: scale(1.15);
+        }
+
+        .chat-window {
+            position: fixed;
+            bottom: 100px;
+            right: 25px;
+            width: 350px;
+            height: 480px;
+            background: #111;
+            border-radius: 20px;
+            box-shadow: 0 25px 70px -15px rgba(0,0,0,0.9);
+            overflow: hidden;
+            display: none;
+            flex-direction: column;
+            z-index: 1001;
+            border: 1px solid #333;
+        }
+
+        .chat-header {
+            background: linear-gradient(to right, #ff7a18, #ff3cac);
+            padding: 16px 20px;
+            color: white;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 18px;
+            overflow-y: auto;
+            background: #0a0a0a;
+            font-size: 14.5px;
+        }
+
+        .chat-input {
+            padding: 14px;
+            background: #1a1a1a;
+            border-top: 1px solid #333;
+        }
+    </style>
+</head>
+<body class="bg-[#050505] text-white overflow-x-hidden">
+
+    <!-- NAVBAR -->
+    <nav class="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-[#050505]/95 backdrop-blur-2xl">
+        <div class="max-w-screen-2xl mx-auto px-8 py-5 flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+                <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#ff7a18] to-[#ff3cac] flex items-center justify-center text-2xl">🔗</div>
+                <h1 class="logo-font text-3xl tracking-[-1px] bg-clip-text text-transparent bg-gradient-to-r from-[#ff7a18] to-[#ff3cac]">SkillHub</h1>
+            </div>
+           
+            <div class="hidden md:flex items-center gap-x-8 text-sm font-medium">
+                <a onclick="smoothScrollTo('features')" class="cursor-pointer hover:text-[#00f5ff]">Features</a>
+                <a onclick="smoothScrollTo('how')" class="cursor-pointer hover:text-[#00f5ff]">How it Works</a>
+                <a onclick="smoothScrollTo('pricing')" class="cursor-pointer hover:text-[#00f5ff]">Pricing</a>
+                <a onclick="smoothScrollTo('why')" class="cursor-pointer hover:text-[#00f5ff]">Why Us</a>
+            </div>
+           
+            <div class="flex items-center gap-x-3">
+                <button onclick="fakeLogin()" class="px-6 py-3 text-sm font-semibold rounded-3xl border border-white/30 hover:border-[#00f5ff]">Log in</button>
+                <button onclick="joinNetwork()" class="px-8 py-3 text-sm font-semibold rounded-3xl bg-gradient-to-r from-[#ff7a18] to-[#ff3cac] hover:shadow-2xl hover:shadow-[#ff3cac]/60">Join Free</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="min-h-screen pt-20 flex items-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-[#ff7a18]/5 to-[#ff3cac]/5"></div>
+       
+        <div class="max-w-screen-2xl mx-auto px-8 grid md:grid-cols-2 gap-12 items-center">
+            <!-- Left -->
+            <div class="pt-12">
+                <div class="inline-flex items-center gap-2 px-5 py-2 rounded-3xl border border-[#00f5ff]/30 text-[#00f5ff] mb-6">
+                    <div class="w-2 h-2 bg-[#00f5ff] rounded-full animate-pulse"></div>
+                    <span id="online-count" class="font-medium">12,847</span> students online right now
+                </div>
+               
+                <h1 class="text-7xl md:text-[82px] leading-[1.05] font-semibold tracking-[-4px]">
+                    Learn from peers.<br>
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-[#ff7a18] to-[#ff3cac]">Teach the world.</span>
+                </h1>
+               
+                <p class="mt-6 text-2xl text-white/80 max-w-lg">
+                    The living peer-to-peer learning network where every student is both teacher and learner.
+                </p>
+               
+                <div class="mt-10 flex flex-wrap gap-4">
+                    <button onclick="joinNetwork()"
+                            class="px-10 py-6 text-xl font-semibold rounded-3xl bg-gradient-to-r from-[#ff7a18] to-[#ff3cac] hover:scale-105 active:scale-95">
+                        Join the Network — It's Free
+                    </button>
+                    <button onclick="watchLiveDemo()"
+                            class="px-8 py-6 text-xl font-semibold rounded-3xl border border-white/30 hover:border-[#00f5ff] flex items-center gap-3">
+                        <span class="text-[#00f5ff]">▶</span> Watch Live Session
+                    </button>
+                </div>
+               
+                <div class="mt-16 flex flex-wrap gap-3" id="floating-tags"></div>
+            </div>
+           
+            <!-- Right: Interactive Network Canvas -->
+            <div class="relative flex justify-center">
+                <canvas id="networkCanvas" width="640" height="640" class="hero-canvas cursor-pointer"></canvas>
+                <div id="node-tooltip" class="absolute hidden glass px-4 py-2 rounded-2xl text-sm pointer-events-none"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROBLEM SECTION -->
+    <section class="py-24">
+        <div class="max-w-screen-2xl mx-auto px-8">
+            <h2 class="text-5xl text-center mb-12">The old education system is broken</h2>
+           
+            <div class="grid md:grid-cols-3 gap-6">
+                <div onclick="highlightProblem(this)" class="glass rounded-3xl p-8 cursor-pointer hover:glow-orange group">
+                    <div class="text-5xl mb-6">💸</div>
+                    <h3 class="text-2xl font-semibold mb-3">Learning is too expensive</h3>
+                    <p class="text-white/70">Courses cost hundreds while the real experts earn almost nothing.</p>
+                </div>
+                <div onclick="highlightProblem(this)" class="glass rounded-3xl p-8 cursor-pointer hover:glow-cyan group">
+                    <div class="text-5xl mb-6">📺</div>
+                    <h3 class="text-2xl font-semibold mb-3">Passive videos don't work</h3>
+                    <p class="text-white/70">You watch. You forget. No feedback. No real progress.</p>
+                </div>
+                <div onclick="highlightProblem(this)" class="glass rounded-3xl p-8 cursor-pointer hover:glow-orange group">
+                    <div class="text-5xl mb-6">🧠</div>
+                    <h3 class="text-2xl font-semibold mb-3">Your skills stay hidden</h3>
+                    <p class="text-white/70">You know things others need — but there's no easy way to share them.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SOLUTION + INTERACTIVE MOCKUP -->
+    <section class="py-24 bg-black/40">
+        <div class="max-w-screen-2xl mx-auto px-8 grid md:grid-cols-2 gap-16">
+            <div>
+                <h2 class="text-5xl mb-8">A living network where knowledge flows both ways</h2>
+                <div class="space-y-8">
+                    <div class="flex gap-5">
+                        <div class="text-4xl text-[#ff7a18]">01</div>
+                        <div class="flex-1">
+                            <h4 class="text-2xl font-medium">Find the perfect peer</h4>
+                            <p class="text-white/70">Real students who recently mastered what you want to learn.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-5">
+                        <div class="text-4xl text-[#ff3cac]">02</div>
+                        <div class="flex-1">
+                            <h4 class="text-2xl font-medium">Learn &amp; Teach live</h4>
+                            <p class="text-white/70">1:1 video sessions with screen sharing and real-time feedback.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-5">
+                        <div class="text-4xl text-[#00f5ff]">03</div>
+                        <div class="flex-1">
+                            <h4 class="text-2xl font-medium">Earn from your knowledge</h4>
+                            <p class="text-white/70">Get paid instantly when you teach others.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+           
+            <div class="relative">
+                <div id="dashboard-mockup" class="glass rounded-3xl overflow-hidden border border-white/20 cursor-pointer">
+                    <div class="bg-[#111] px-6 py-4 flex justify-between items-center">
+                        <div class="font-semibold">SkillHub • Live Network</div>
+                        <div class="text-[#00f5ff] text-sm">184 peers online</div>
+                    </div>
+                    <div class="p-6">
+                        <div id="session-list" class="space-y-4"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how" class="py-24">
+        <div class="max-w-screen-2xl mx-auto px-8">
+            <h2 class="text-5xl text-center mb-16">How the living network works</h2>
+            <div class="grid md:grid-cols-4 gap-6" id="steps-container"></div>
+        </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="py-28 relative overflow-hidden">
+        <div class="max-w-2xl mx-auto text-center px-8">
+            <h2 class="text-6xl font-semibold mb-6">Ready to join the living network?</h2>
+            <button onclick="triggerJoinConfetti()" 
+                    class="px-16 py-8 text-3xl font-semibold rounded-3xl bg-gradient-to-r from-[#ff7a18] to-[#ff3cac] hover:scale-110 active:scale-95">
+                Start Learning &amp; Earning Today
+            </button>
+            <p class="mt-8 text-white/60">Free to join • No credit card needed • 12,847 students already inside</p>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-black py-16 border-t border-white/10">
+        <div class="max-w-screen-2xl mx-auto px-8 text-center text-white/50 text-sm">
+            © 2026 SkillHub • The Living Network of Students
+        </div>
+    </footer>
+
+    <!-- CHATBOT -->
+    <div onclick="toggleChat()" class="chat-bubble">💬</div>
+
+    <div id="chat-window" class="chat-window flex flex-col">
+        <div class="chat-header">
+            <span>SkillHub Assistant</span>
+            <span onclick="toggleChat()" class="cursor-pointer text-xl">✕</span>
+        </div>
+        <div id="chat-messages" class="chat-messages"></div>
+        <div class="chat-input flex gap-2">
+            <input id="chat-input" type="text" placeholder="Ask anything about SkillHub..." 
+                   class="flex-1 bg-[#222] border border-white/20 rounded-2xl px-4 py-3 focus:outline-none focus:border-[#00f5ff]">
+            <button onclick="sendMessage()" 
+                    class="bg-gradient-to-r from-[#ff7a18] to-[#ff3cac] px-6 rounded-2xl text-sm font-medium">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Live online counter
+        let onlineCount = 12847;
+        setInterval(() => {
+            onlineCount += Math.floor(Math.random() * 7) + 3;
+            document.getElementById('online-count').textContent = onlineCount.toLocaleString();
+        }, 2800);
+
+        // Skill tags
+        const skills = [
+            { emoji: "🐍", name: "Python", color: "#ff7a18" },
+            { emoji: "✂️", name: "Video Editing", color: "#ff3cac" },
+            { emoji: "🗣️", name: "Public Speaking", color: "#00f5ff" },
+            { emoji: "🎨", name: "UI Design", color: "#ff7a18" },
+            { emoji: "📊", name: "Data Analysis", color: "#ff3cac" }
+        ];
+
+        function populateSkillTags() {
+            const container = document.getElementById('floating-tags');
+            skills.forEach(skill => {
+                const tag = document.createElement('div');
+                tag.className = `skill-tag glass px-6 py-3 rounded-3xl flex items-center gap-3 text-sm font-medium hover:scale-110 active:scale-95`;
+                tag.style.border = `1px solid ${skill.color}30`;
+                tag.innerHTML = `<span class="text-2xl">${skill.emoji}</span><span>${skill.name}</span>`;
+                tag.onclick = () => pulseNetworkForSkill(skill.name);
+                container.appendChild(tag);
+            });
+        }
+
+        // Network Canvas
+        let canvas, ctx, nodes = [];
+        function initNetwork() {
+            canvas = document.getElementById('networkCanvas');
+            ctx = canvas.getContext('2d');
+            canvas.width = 640;
+            canvas.height = 640;
+
+            nodes = [
+                {x: 180, y: 160, r: 38, label: "Python", hue: 25},
+                {x: 460, y: 130, r: 35, label: "Editing", hue: 330},
+                {x: 320, y: 340, r: 42, label: "Speaking", hue: 190},
+                {x: 110, y: 420, r: 32, label: "Design", hue: 25},
+                {x: 520, y: 420, r: 36, label: "Data", hue: 330}
+            ];
+
+            nodes.forEach(n => {
+                n.vx = (Math.random()-0.5)*0.8;
+                n.vy = (Math.random()-0.5)*0.8;
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const mx = e.clientX - rect.left;
+                const my = e.clientY - rect.top;
+                nodes.forEach(node => {
+                    const dist = Math.hypot(node.x - mx, node.y - my);
+                    if (dist < 80) node.r = 48;
+                    else node.r = 35;
+                });
+            });
+
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const mx = e.clientX - rect.left;
+                const my = e.clientY - rect.top;
+                nodes.forEach(node => {
+                    if (Math.hypot(node.x - mx, node.y - my) < node.r + 20) {
+                        showTooltip(node.label, mx, my);
+                        pulseNetworkForSkill(node.label);
+                    }
+                });
+            });
+
+            animateNetwork();
+        }
+
+        function animateNetwork() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+           
+            ctx.strokeStyle = 'rgba(0, 245, 255, 0.25)';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i+1; j < nodes.length; j++) {
+                    const dx = nodes[i].x - nodes[j].x;
+                    const dy = nodes[i].y - nodes[j].y;
+                    const dist = Math.hypot(dx, dy);
+                    if (dist < 320) {
+                        ctx.globalAlpha = (320 - dist) / 320;
+                        ctx.beginPath();
+                        ctx.moveTo(nodes[i].x, nodes[i].y);
+                        ctx.lineTo(nodes[j].x, nodes[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            ctx.globalAlpha = 1;
+
+            nodes.forEach(node => {
+                node.x += node.vx;
+                node.y += node.vy;
+                if (node.x < 60 || node.x > 580) node.vx *= -1;
+                if (node.y < 60 || node.y > 580) node.vy *= -1;
+
+                ctx.shadowBlur = 40;
+                ctx.shadowColor = `hsl(${node.hue}, 100%, 65%)`;
+                ctx.fillStyle = `hsl(${node.hue}, 100%, 65%)`;
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, node.r, 0, Math.PI*2);
+                ctx.fill();
+
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#050505';
+                ctx.font = '600 14px Space Grotesk';
+                ctx.textAlign = 'center';
+                ctx.fillText(node.label, node.x, node.y + 5);
+            });
+           
+            requestAnimationFrame(animateNetwork);
+        }
+
+        function pulseNetworkForSkill(skillName) {
+            canvas.style.transition = 'filter 0.4s';
+            canvas.style.filter = 'brightness(1.6) drop-shadow(0 0 60px #00f5ff)';
+            setTimeout(() => canvas.style.filter = 'none', 600);
+        }
+
+        function showTooltip(label, x, y) {
+            const tooltip = document.getElementById('node-tooltip');
+            tooltip.textContent = `🔗 ${label} session available now`;
+            tooltip.style.left = `${x + 30}px`;
+            tooltip.style.top = `${y - 30}px`;
+            tooltip.classList.remove('hidden');
+            setTimeout(() => tooltip.classList.add('hidden'), 2200);
+        }
+
+        // Dashboard Mockup
+        function initDashboardMockup() {
+            const sessions = [
+                { title: "Python Debugging", teacher: "Priya Sharma", time: "Live in 12 min", price: "₹320" },
+                { title: "Figma Advanced", teacher: "Rahul Verma", time: "Now", price: "₹450" },
+                { title: "Public Speaking", teacher: "Anika Patel", time: "In 47 min", price: "₹280" }
+            ];
+            const container = document.getElementById('session-list');
+            sessions.forEach(s => {
+                const div = document.createElement('div');
+                div.className = "glass p-4 rounded-2xl hover:scale-[1.02] cursor-pointer";
+                div.innerHTML = `
+                    <div class="flex justify-between">
+                        <div>
+                            <div class="font-medium">${s.title}</div>
+                            <div class="text-xs text-white/60">${s.teacher}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-[#00f5ff] text-sm">${s.time}</div>
+                            <div class="text-sm">${s.price}</div>
+                        </div>
+                    </div>
+                `;
+                div.onclick = () => alert(`Opening live session with ${s.teacher}...`);
+                container.appendChild(div);
+            });
+        }
+
+        // How It Works
+        function initHowItWorks() {
+            const steps = [
+                { num: "01", title: "Create Profile", desc: "Show what you know and want to learn" },
+                { num: "02", title: "List Skills", desc: "Offer sessions or browse others" },
+                { num: "03", title: "Connect Live", desc: "Join 1:1 video sessions" },
+                { num: "04", title: "Earn & Grow", desc: "Get paid instantly" }
+            ];
+           
+            const container = document.getElementById('steps-container');
+            steps.forEach(step => {
+                const el = document.createElement('div');
+                el.className = `glass rounded-3xl p-8 text-center cursor-pointer hover:glow-cyan`;
+                el.innerHTML = `
+                    <div class="text-6xl mb-4 text-[#00f5ff]">${step.num}</div>
+                    <div class="text-2xl font-semibold mb-3">${step.title}</div>
+                    <div class="text-white/70">${step.desc}</div>
+                `;
+                el.onclick = () => {
+                    el.style.transform = 'scale(1.08)';
+                    setTimeout(() => el.style.transform = 'scale(1)', 300);
+                };
+                container.appendChild(el);
+            });
+        }
+
+        // Confetti
+        function triggerJoinConfetti() {
+            joinNetwork();
+            for (let i = 0; i < 80; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.style.position = 'fixed';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.top = '-20px';
+                    confetti.style.fontSize = '22px';
+                    confetti.style.zIndex = '9999';
+                    confetti.textContent = ['🎉','🔥','🌟','🧠','🔗'][Math.floor(Math.random()*5)];
+                    document.body.appendChild(confetti);
+                    confetti.animate([
+                        { transform: 'translateY(0) rotate(0deg)', opacity: 1 },
+                        { transform: `translateY(${window.innerHeight + 100}px) rotate(${Math.random()*800 - 400}deg)`, opacity: 0 }
+                    ], { duration: 2800 + Math.random()*2000, easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)' });
+                    setTimeout(() => confetti.remove(), 5000);
+                }, i * 18);
+            }
+        }
+
+        function joinNetwork() {
+            alert("🎉 Welcome to SkillHub!\n\nYour profile has been created.\nThe living network is now open for you.");
+        }
+
+        function fakeLogin() {
+            alert("👋 Logged in as Aryan from Delhi\nYou have 3 skills listed and 2 upcoming sessions.");
+        }
+
+        function watchLiveDemo() {
+            alert("📹 Live Demo:\nYou're now watching a real-time Python session between two students.");
+            pulseNetworkForSkill("Python");
+        }
+
+        function highlightProblem(el) {
+            el.style.transform = 'scale(1.05)';
+            el.style.boxShadow = '0 0 40px -10px #ff7a18';
+            setTimeout(() => {
+                el.style.transform = 'scale(1)';
+                el.style.boxShadow = '';
+            }, 800);
+        }
+
+        function smoothScrollTo(sectionId) {
+            document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ==================== CHATBOT ====================
+        function toggleChat() {
+            const win = document.getElementById('chat-window');
+            win.style.display = (win.style.display === 'flex') ? 'none' : 'flex';
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const messagesDiv = document.getElementById('chat-messages');
+
+            // User Message
+            const userMsg = document.createElement('div');
+            userMsg.className = "bg-[#ff7a18] text-white p-3 rounded-2xl rounded-tr-none ml-auto max-w-[80%] mb-3";
+            userMsg.textContent = text;
+            messagesDiv.appendChild(userMsg);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            input.value = '';
+
+            // Bot Reply
+            setTimeout(() => {
+                let reply = "Thanks for your question! How can I help you with SkillHub?";
+
+                const lowerText = text.toLowerCase();
+
+                // Special response for "when will it come live"
+                if (lowerText.includes("when") && 
+                    (lowerText.includes("live") || lowerText.includes("launch") || 
+                     lowerText.includes("release") || lowerText.includes("ready"))) {
+                    reply = "Very soon! 🚀 We're working hard to bring the full living network to you.";
+                } 
+                else if (lowerText.includes("how") || lowerText.includes("work")) {
+                    reply = "You create a profile, list your skills, and connect with other students through live 1:1 video sessions.";
+                } 
+                else if (lowerText.includes("price") || lowerText.includes("cost")) {
+                    reply = "It's free to join! Pro plan starts at $12/month.";
+                } 
+                else if (lowerText.includes("hello") || lowerText.includes("hi")) {
+                    reply = "Hello! Welcome to SkillHub. What would you like to know?";
+                }
+
+                const botMsg = document.createElement('div');
+                botMsg.className = "bg-[#1f1f1f] p-3 rounded-2xl rounded-tl-none max-w-[85%] mb-3";
+                botMsg.textContent = reply;
+                messagesDiv.appendChild(botMsg);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }, 650);
+        }
+
+        // Initialize everything
+        window.onload = function() {
+            populateSkillTags();
+            initNetwork();
+            initDashboardMockup();
+            initHowItWorks();
+
+            // Initial chatbot message
+            const messagesDiv = document.getElementById('chat-messages');
+            messagesDiv.innerHTML = `
+                <div class="bg-[#1f1f1f] p-3 rounded-2xl rounded-tl-none">
+                    Hi! I'm the SkillHub Assistant.<br>
+                    How can I help you explore the living network today?
+                </div>
+            `;
+
+            console.log("%c✅ SkillHub Landing Page with Chatbot Loaded Successfully", "color:#00f5ff; font-weight:bold");
+        };
+    </script>
+</body>
+</html>
